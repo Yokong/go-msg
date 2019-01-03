@@ -1,10 +1,10 @@
 package login
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"go-msg/common/message"
+	"go-msg/utils"
 	"net"
 )
 
@@ -15,12 +15,14 @@ func Login(username, password string) (err error) {
 	}
 	defer conn.Close()
 
-	var msg message.Message
-	msg.Type = message.LoginMsgType
+	msg := message.Message{
+		Type: message.LoginMsgType,
+	}
 
-	var loginmsg message.LoginMsg
-	loginmsg.UserName = username
-	loginmsg.Password = password
+	loginmsg := message.LoginMsg{
+		UserName: username,
+		Password: password,
+	}
 
 	data, err := json.Marshal(loginmsg)
 	if err != nil {
@@ -33,14 +35,8 @@ func Login(username, password string) (err error) {
 		fmt.Println(err)
 		return
 	}
-	dataLen := uint32(len(data))
-	var buf [4]byte
-	binary.BigEndian.PutUint32(buf[:4], dataLen)
-	n, err := conn.Write(buf[:4])
-	if n != 4 || err != nil {
-		fmt.Println("*********8")
-		fmt.Println(err)
-		return
-	}
+	utils.WritePkg(conn, data)
+	rspmsg, err := utils.ReadPkg(conn)
+	fmt.Println(rspmsg)
 	return
 }
