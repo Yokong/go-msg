@@ -35,8 +35,11 @@ func Login(username, password string) (err error) {
 		fmt.Println(err)
 		return
 	}
-	utils.WritePkg(conn, data)
-	rspmsg, err := utils.ReadPkg(conn)
+	tf := utils.Transer{
+		Conn: conn,
+	}
+	tf.WritePkg(data)
+	rspmsg, err := tf.ReadPkg()
 	fmt.Println(rspmsg)
 	return
 }

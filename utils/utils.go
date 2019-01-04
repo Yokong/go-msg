@@ -8,18 +8,22 @@ import (
 	"net"
 )
 
-func WritePkg(conn net.Conn, data []byte) (err error) {
+type Transer struct {
+	Conn net.Conn
+	Buf [8096]byte
+}
+
+func (this *Transer) WritePkg(data []byte) (err error) {
 	dataLen := uint32(len(data))
-	var buf [4]byte
-	binary.BigEndian.PutUint32(buf[:4], dataLen)
-	n, err := conn.Write(buf[:4])
+	binary.BigEndian.PutUint32(this.Buf[:4], dataLen)
+	n, err := this.Conn.Write(this.Buf[:4])
 	if n != 4 || err != nil {
 		fmt.Println("*********8")
 		fmt.Println(err)
 		return
 	}
 
-	_, err = conn.Write(data)
+	_, err = this.Conn.Write(data)
 	if err != nil {
 		fmt.Println("write data failed: ", err)
 		return
@@ -27,21 +31,20 @@ func WritePkg(conn net.Conn, data []byte) (err error) {
 	return
 }
 
-func ReadPkg(conn net.Conn) (msg message.Message, err error) {
-	buf := make([]byte, 8096)
-	_, err = conn.Read(buf[:4])
+func (this *Transer) ReadPkg() (msg message.Message, err error) {
+	_, err = this.Conn.Read(this.Buf[:4])
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("读到的buf: ", buf[:4])
+	fmt.Println("读到的this.Buf: ", this.Buf[:4])
 
-	pkgLen := binary.BigEndian.Uint32(buf[:4])
-	n, err := conn.Read(buf[:pkgLen])
+	pkgLen := binary.BigEndian.Uint32(this.Buf[:4])
+	n, err := this.Conn.Read(this.Buf[:pkgLen])
 	if n != int(pkgLen) || err != nil {
 		return
 	}
-	err = json.Unmarshal(buf[:pkgLen], &msg)
+	err = json.Unmarshal(this.Buf[:pkgLen], &msg)
 	if err != nil {
 		return
 	}
