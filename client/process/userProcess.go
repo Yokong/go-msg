@@ -44,6 +44,14 @@ func (this *UserProcess)Login(username, password string) (err error) {
 	}
 	tf.WritePkg(data)
 	rspmsg, err := tf.ReadPkg()
-	fmt.Println(rspmsg)
+
+	// 反序列化data
+	var loginRspMsg message.LoginRsp
+	err = json.Unmarshal([]byte(rspmsg.Data), &loginRspMsg)
+	if loginRspMsg.Code == 200 {
+		fmt.Println("登录成功")
+		go serverProcessMsg(conn)
+		ShowMenu()
+	}
 	return
 }
