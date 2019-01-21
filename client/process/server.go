@@ -10,6 +10,9 @@ func ShowMenu() {
 	fmt.Println("------ xxx 登录成功 -----")
 	for {
 		fmt.Println("1. 好友列表")
+		fmt.Println("2. 发送信息")
+		fmt.Println("3. 信息列表")
+		fmt.Println("4. 退出系统")
 		var key int
 		fmt.Scanf("%d\n", &key)
 		switch key {
