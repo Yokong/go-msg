@@ -5,8 +5,18 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+var MyUserDao *UserDao
+
 type UserDao struct {
 	pool *redis.Pool
+}
+
+func NewUserDao(pool *redis.Pool) (userDao *UserDao) {
+	userDao = &UserDao{
+		pool: pool,
+	}
+
+	return
 }
 
 func (this *UserDao) Get(conn redis.Conn, username string) (user *User, err error)  {
@@ -20,5 +30,22 @@ func (this *UserDao) Get(conn redis.Conn, username string) (user *User, err erro
 		return
 	}
 
-	return 
+	return
+}
+
+func (this *UserDao) Login(username, password string) (user *User, err error) {
+	conn := this.pool.Get()
+	defer conn.Close()
+
+	user, err = this.Get(conn, username)
+	if err != nil {
+		return
+	}
+
+	if user.PassWord != password {
+		err = ERROR_PWD_FAILED
+		return
+	}
+
+	return
 }
