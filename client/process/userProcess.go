@@ -17,7 +17,6 @@ func (this *UserProcess)Login(username, password string) (err error) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer conn.Close()
 
 	msg := message.Message{
 		Type: message.LoginMsgType,
@@ -48,10 +47,11 @@ func (this *UserProcess)Login(username, password string) (err error) {
 	// 反序列化data
 	var loginRspMsg message.LoginRsp
 	err = json.Unmarshal([]byte(rspmsg.Data), &loginRspMsg)
-	if loginRspMsg.Code == 200 {
+	if loginRspMsg.Code == 0 {
 		fmt.Println("登录成功")
 		go serverProcessMsg(conn)
-		ShowMenu()
+	} else {
+		fmt.Println(loginRspMsg.Error)
 	}
 	return
 }
